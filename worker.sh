@@ -15,13 +15,24 @@ if ! command -v gh >/dev/null 2>&1; then
   exit 1
 fi
 
+seen='|'
 while true; do
-  printf '\nOpen issues: faiyaz-ally/VoiceAgent---POC\n'
-  GH_PROMPT_DISABLED=1 gh issue list \
+  issues=$(GH_PROMPT_DISABLED=1 gh issue list \
     --repo github.com/faiyaz-ally/VoiceAgent---POC \
     --state open \
     --limit 100 \
-    --json number,title,body
+    --json number,title,body \
+    --jq '.[] | "\(.number)\t\(tojson)"')
+
+  if [ -n "$issues" ]; then
+    while IFS=$'\t' read -r number issue; do
+      case "$seen" in
+        *"|$number|"*) continue ;;
+      esac
+      printf '%s\n' "$issue"
+      seen="${seen}${number}|"
+    done <<< "$issues"
+  fi
 
   if [ "${1:-}" = --once ]; then
     break

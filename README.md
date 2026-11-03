@@ -27,7 +27,7 @@ cd ~/VoiceAgent---POC
 bash worker.sh
 ```
 
-The worker immediately fetches and prints up to 100 open issues from `faiyaz-ally/VoiceAgent---POC`, then repeats every 30 seconds. Press **Ctrl+C** to stop. It runs only while the foreground process is active and your Mac is awake and connected.
+The worker immediately fetches up to 100 open issues from `faiyaz-ally/VoiceAgent---POC`, then checks again 30 seconds after each fetch finishes. It prints each newly discovered issue once per run. Issues present on the first fetch are considered newly discovered. Press **Ctrl+C** to stop. It runs only while the foreground process is active and your Mac is awake and connected.
 
 To fetch once and exit:
 
@@ -35,19 +35,13 @@ To fetch once and exit:
 bash worker.sh --once
 ```
 
-Output is JSON containing each issue's `number`, `title`, and `body` (description). JSON keeps control characters escaped rather than interpreting issue content as terminal instructions. For example:
+Output is one JSON object per newly discovered issue, containing its `number`, `title`, and `body` (description). JSON keeps control characters escaped rather than interpreting issue content as terminal instructions. For example:
 
 ```json
-[
-  {
-    "number": 1,
-    "title": "Example task",
-    "body": "Describe the requested work here."
-  }
-]
+{"number":1,"title":"Example task","body":"Describe the requested work here."}
 ```
 
-An empty list (`[]`) means no open issues were returned. Each poll prints a full snapshot, including previously displayed issues. Closed issues, pull requests, and issues beyond the 100-issue limit are excluded. If authentication, permissions, networking, or an API request fails, the worker reports the GitHub CLI error and exits; restart it after resolving the problem.
+Polls with no newly discovered issues produce no output. Issue numbers are remembered only in memory: edits or reopening an already displayed issue do not print it again, but restarting the worker resets the memory. Closed issues, pull requests, and issues beyond the 100-issue limit are excluded. If authentication, permissions, networking, or an API request fails, the worker reports the GitHub CLI error and exits; restart it after resolving the problem.
 
 ## Read-only scope
 
